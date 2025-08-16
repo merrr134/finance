@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pencatat Keuangan Dinamis</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body class="bg-slate-100 text-slate-800">
+
+    <div class="container mx-auto p-4 sm:p-6 lg:p-8">
+        <header class="mb-6">
+            <h1 class="text-3xl sm:text-4xl font-bold text-slate-900">Pencatat Keuangan</h1>
+            <p class="text-slate-600">Catat keuangan pribadi dan bisnismu di sini.</p>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+            <div class="lg:col-span-1 flex flex-col gap-6">
+                <section id="form-section" class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold mb-4">Tambah Transaksi</h2>
+                    <form id="transaction-form" class="space-y-4">
+                        <div>
+                            <label for="akun" class="block text-sm font-medium text-slate-700">Akun</label>
+                            <select id="akun" name="akun" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <option>GoPay</option>
+                                <option>BRI</option>
+                                <option>SeaBank</option>
+                                <option>Bibit</option>
+                                <option>Bank Jago</option>
+                                <option>DANA</option>
+                                <option>Cash</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="jenis" class="block text-sm font-medium text-slate-700">Jenis Transaksi</label>
+                            <select id="jenis" name="jenis" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <option value="pemasukan">Pemasukan (+)</option>
+                                <option value="pengeluaran">Pengeluaran (-)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="jumlah" class="block text-sm font-medium text-slate-700">Jumlah</label>
+                            <input type="number" id="jumlah" name="jumlah" required class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Contoh: 50000">
+                        </div>
+                        <div>
+                            <label for="keterangan" class="block text-sm font-medium text-slate-700">Keterangan</label>
+                            <input type="text" id="keterangan" name="keterangan" required class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500" placeholder="Contoh: Beli Kopi">
+                        </div>
+                        <div>
+                            <label for="kategori" class="block text-sm font-medium text-slate-700">Kategori</label>
+                            <select id="kategori" name="kategori" class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                </select>
+                            <div class="mt-2 flex gap-2">
+                                <input type="text" id="new-category-input" class="flex-grow block w-full p-2 border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm" placeholder="Buat kategori baru...">
+                                <button type="button" id="add-category-btn" class="bg-slate-600 text-white font-semibold py-2 px-3 rounded-md hover:bg-slate-700 text-sm">Tambah</button>
+                            </div>
+                        </div>
+                         <div>
+                            <label for="tanggal" class="block text-sm font-medium text-slate-700">Tanggal</label>
+                            <input type="date" id="tanggal" name="tanggal" required class="mt-1 block w-full p-2 border border-slate-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <button type="submit" class="w-full bg-indigo-600 text-white font-bold py-3 px-4 rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            Simpan Transaksi
+                        </button>
+                    </form>
+                </section>
+
+                <section id="summary-section" class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold mb-4">Ringkasan Otomatis</h2>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
+                            <span class="font-semibold text-blue-800">Total Tabungan</span>
+                            <span id="total-tabungan" class="font-bold text-lg text-blue-900">Rp 0</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-green-50 rounded-lg">
+                            <span class="font-semibold text-green-800">Modal Bisnis</span>
+                            <span id="modal-bisnis" class="font-bold text-lg text-green-900">Rp 0</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-purple-50 rounded-lg">
+                            <span class="font-semibold text-purple-800">Uang Foya</span>
+                            <span id="uang-foya" class="font-bold text-lg text-purple-900">Rp 0</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+
+            <div class="lg:col-span-2 flex flex-col gap-6">
+                <section id="balance-section" class="bg-white p-6 rounded-xl shadow-md">
+                    <h2 class="text-2xl font-bold mb-4">Saldo Semua Akun</h2>
+                    <div id="account-balances" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                        </div>
+                </section>
+                
+                <section id="history-section" class="bg-white p-6 rounded-xl shadow-md">
+                     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-4">
+                        <h2 class="text-2xl font-bold">Riwayat Transaksi</h2>
+                        <div class="flex flex-wrap items-center gap-2">
+                             <div class="flex items-center space-x-2 bg-slate-200 p-1 rounded-lg">
+                                <button id="mode-pribadi" class="px-3 py-1 text-sm rounded-md bg-white shadow">Pribadi</button>
+                                <button id="mode-bisnis" class="px-3 py-1 text-sm rounded-md">Bisnis</button>
+                            </div>
+                            <select id="filter-bulan" class="p-2 border border-slate-300 rounded-md text-sm">
+                                <option value="all">Semua Bulan</option>
+                            </select>
+                            <select id="filter-tahun" class="p-2 border border-slate-300 rounded-md text-sm">
+                               <option value="all">Semua Tahun</option>
+                            </select>
+                        </div>
+                    </div>
+                     <div class="flex flex-wrap items-center gap-2 mb-4">
+                        <button id="export-csv" class="w-full sm:w-auto flex-grow bg-green-600 text-white font-bold py-2 px-3 rounded-md hover:bg-green-700 text-sm"><i class="fas fa-file-csv mr-1"></i> Export CSV</button>
+                        <button id="export-pdf" class="w-full sm:w-auto flex-grow bg-red-600 text-white font-bold py-2 px-3 rounded-md hover:bg-red-700 text-sm"><i class="fas fa-file-pdf mr-1"></i> Export PDF Laporan</button>
+                    </div>
+                    <div id="transaction-list-container" class="overflow-x-auto">
+                        <table class="w-full text-sm text-left">
+                            <thead class="bg-slate-100 text-slate-600 uppercase">
+                                <tr>
+                                    <th class="p-3">Detail</th>
+                                    <th class="p-3 text-right">Jumlah</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transaction-list">
+                                </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script src="main.js" defer></script>
+</body>
+</html>

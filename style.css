@@ -1,0 +1,70 @@
+/* style.css */
+
+/* Animasi sederhana untuk item yang baru ditambahkan */
+.new-item-mobile {
+    animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Style untuk mode cetak (Export PDF) */
+@media print {
+    body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    header, #form-section, #history-section .flex, #chart-section {
+        display: none !important;
+    }
+    main, #balance-section, #summary-section, #history-section, .container, body {
+        all: unset !important;
+        display: block !important;
+        box-shadow: none !important;
+        border: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+    #report-title {
+        display: block !important;
+        font-size: 24pt;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+     #report-summary {
+        display: block !important;
+        margin-bottom: 20px;
+        border: 1px solid #ccc;
+        padding: 15px;
+     }
+    table {
+        width: 100% !important;
+        border-collapse: collapse;
+    }
+    th, td {
+        border: 1px solid #ddd;
+        padding: 8px;
+        font-size: 10pt;
+    }
+    th {
+        background-color: #f2f2f2;
+    }
+    .text-red-600 { color: #dc2626 !important; }
+    .text-green-600 { color: #16a34a !important; }
+    
+    /* Pastikan kolom tabel di print format terlihat */
+    .print-show {
+        display: table-cell !important;
+    }
+    .print-hide {
+        display: none !important;
+    }
+}
