@@ -1,7 +1,6 @@
 // main.js
 
 document.addEventListener('DOMContentLoaded', () => {
-
     // Referensi Elemen DOM
     const transactionForm = document.getElementById('transaction-form');
     const transactionList = document.getElementById('transaction-list');
@@ -15,22 +14,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const exportPdfBtn = document.getElementById('export-pdf');
     const modePribadiBtn = document.getElementById('mode-pribadi');
     const modeBisnisBtn = document.getElementById('mode-bisnis');
-    // --- Elemen Baru untuk Kategori ---
-    const categorySelect = document.getElementById('kategori');
-    const newCategoryInput = document.getElementById('new-category-input');
-    const addCategoryBtn = document.getElementById('add-category-btn');
     
     // State Aplikasi
-    let transactions = JSON.parse(localStorage.getItem('transactions_v2')) || [];
-    let categories = []; // Akan diisi dari localStorage atau default
+    let transactions = JSON.parse(localStorage.getItem('transactions_v3')) || [];
     let currentMode = 'pribadi';
     const accountList = ['GoPay', 'BRI', 'SeaBank', 'Bibit', 'Bank Jago', 'DANA', 'Cash'];
-    const defaultCategories = ['Makanan', 'Belanja', 'Transportasi', 'Bisnis', 'Langganan', 'Tagihan', 'Hiburan', 'Lainnya'];
 
     // Inisialisasi
     const init = () => {
-        loadCategories();
-        populateCategoryDropdown();
         setupEventListeners();
         populateDate();
         populateFilters();
@@ -39,7 +30,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const setupEventListeners = () => {
         transactionForm.addEventListener('submit', addTransaction);
-        addCategoryBtn.addEventListener('click', addNewCategory); // Listener untuk tombol baru
         filterBulan.addEventListener('change', renderAll);
         filterTahun.addEventListener('change', renderAll);
         exportCsvBtn.addEventListener('click', exportCSV);
@@ -47,54 +37,6 @@ document.addEventListener('DOMContentLoaded', () => {
         modePribadiBtn.addEventListener('click', () => setMode('pribadi'));
         modeBisnisBtn.addEventListener('click', () => setMode('bisnis'));
     };
-    
-    // --- FUNGSI BARU UNTUK MANAJEMEN KATEGORI ---
-    const loadCategories = () => {
-        const storedCategories = localStorage.getItem('finance_categories');
-        if (storedCategories) {
-            categories = JSON.parse(storedCategories);
-        } else {
-            categories = [...defaultCategories]; // Gunakan default jika belum ada
-        }
-    };
-    
-    const saveCategories = () => {
-        localStorage.setItem('finance_categories', JSON.stringify(categories));
-    };
-
-    const populateCategoryDropdown = () => {
-        categorySelect.innerHTML = '';
-        categories.forEach(cat => {
-            const option = document.createElement('option');
-            option.value = cat;
-            option.textContent = cat;
-            categorySelect.appendChild(option);
-        });
-    };
-    
-    const addNewCategory = () => {
-        const newCat = newCategoryInput.value.trim();
-        if (!newCat) {
-            alert('Nama kategori tidak boleh kosong.');
-            return;
-        }
-        // Cek duplikat (case-insensitive)
-        if (categories.some(c => c.toLowerCase() === newCat.toLowerCase())) {
-            alert('Kategori tersebut sudah ada.');
-            return;
-        }
-        
-        categories.push(newCat);
-        saveCategories();
-        populateCategoryDropdown();
-        
-        // UX: Langsung pilih kategori yang baru dibuat
-        categorySelect.value = newCat;
-        newCategoryInput.value = ''; // Kosongkan input
-        alert(`Kategori "${newCat}" berhasil ditambahkan!`);
-    };
-    // ---------------------------------------------
-
 
     // Fungsi Utama
     const addTransaction = (e) => {
@@ -102,18 +44,19 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const formData = new FormData(transactionForm);
         const amount = parseFloat(formData.get('jumlah'));
+        const keterangan = formData.get('keterangan').trim();
 
         const baseTransaction = {
             id: Date.now(),
             akun: formData.get('akun'),
             jenis: formData.get('jenis'),
             jumlah: amount,
-            keterangan: formData.get('keterangan').trim(),
-            kategori: formData.get('kategori'),
+            keterangan: keterangan,
             tanggal: formData.get('tanggal'),
         };
-
-        if (baseTransaction.jenis === 'pemasukan' && baseTransaction.kategori === 'Bisnis') {
+        
+        // Auto-split jika jenis pemasukan DAN keterangan mengandung kata "bisnis"
+        if (baseTransaction.jenis === 'pemasukan' && keterangan.toLowerCase().includes('bisnis')) {
             transactions.push({ ...baseTransaction, akun: 'Bank Jago' });
             handleBusinessSplit(baseTransaction);
         } else {
@@ -124,8 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
         renderAll();
         transactionForm.reset();
         populateDate();
-        // Pastikan kategori tetap terisi setelah reset form
-        populateCategoryDropdown();
     };
 
     const handleBusinessSplit = (baseTransaction) => {
@@ -134,17 +75,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const foyaAmount = amount * 0.2;
 
         const splitTransactions = [
-            { id: Date.now() + 1, akun: 'Bank Jago', jenis: 'pengeluaran', jumlah: tabunganAmount, keterangan: `Split Tabungan dari: ${baseTransaction.keterangan}`, kategori: 'Bisnis', tanggal: baseTransaction.tanggal, isSplit: true },
-            { id: Date.now() + 2, akun: 'Bank Jago', jenis: 'pengeluaran', jumlah: foyaAmount, keterangan: `Split Foya dari: ${baseTransaction.keterangan}`, kategori: 'Bisnis', tanggal: baseTransaction.tanggal, isSplit: true },
-            { id: Date.now() + 3, akun: 'SeaBank', jenis: 'pemasukan', jumlah: tabunganAmount, keterangan: `Split Tabungan dari: ${baseTransaction.keterangan}`, kategori: 'Bisnis', tanggal: baseTransaction.tanggal, isSplit: true },
-            { id: Date.now() + 4, akun: 'DANA', jenis: 'pemasukan', jumlah: foyaAmount, keterangan: `Split Foya dari: ${baseTransaction.keterangan}`, kategori: 'Bisnis', tanggal: baseTransaction.tanggal, isSplit: true }
+            { id: Date.now() + 1, akun: 'Bank Jago', jenis: 'pengeluaran', jumlah: tabunganAmount, keterangan: `Split Tabungan dari: ${baseTransaction.keterangan}`, tanggal: baseTransaction.tanggal },
+            { id: Date.now() + 2, akun: 'Bank Jago', jenis: 'pengeluaran', jumlah: foyaAmount, keterangan: `Split Foya dari: ${baseTransaction.keterangan}`, tanggal: baseTransaction.tanggal },
+            { id: Date.now() + 3, akun: 'SeaBank', jenis: 'pemasukan', jumlah: tabunganAmount, keterangan: `Split Tabungan dari: ${baseTransaction.keterangan}`, tanggal: baseTransaction.tanggal },
+            { id: Date.now() + 4, akun: 'DANA', jenis: 'pemasukan', jumlah: foyaAmount, keterangan: `Split Foya dari: ${baseTransaction.keterangan}`, tanggal: baseTransaction.tanggal }
         ];
         
         transactions.push(...splitTransactions);
     };
 
     const saveTransactions = () => {
-        localStorage.setItem('transactions_v2', JSON.stringify(transactions));
+        localStorage.setItem('transactions_v3', JSON.stringify(transactions));
     };
     
     const setMode = (mode) => {
@@ -173,7 +114,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const bulanMatch = selectedBulan === 'all' || (date.getMonth() + 1) == selectedBulan;
             const tahunMatch = selectedTahun === 'all' || date.getFullYear() == selectedTahun;
             
-            const isBusinessTx = t.kategori === 'Bisnis';
+            // Filter mode berdasarkan keterangan
+            const isBusinessTx = t.keterangan.toLowerCase().includes('bisnis');
             const modeMatch = currentMode === 'bisnis' ? isBusinessTx : !isBusinessTx;
             
             return bulanMatch && tahunMatch && modeMatch;
@@ -238,8 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     <div class="font-medium">${t.keterangan}</div>
                     <div class="text-xs text-slate-500">
                         <span>${new Date(t.tanggal).toLocaleDateString('id-ID', { day:'2-digit', month:'short', year:'numeric'})}</span> &bull;
-                        <span>${t.akun}</span> &bull;
-                        <span class="font-semibold">${t.kategori}</span>
+                        <span>${t.akun}</span>
                     </div>
                 </td>
                 <td class="p-3 text-right font-semibold whitespace-nowrap ${isIncome ? 'text-green-600' : 'text-red-600'}">
@@ -276,9 +217,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Fungsi Ekspor
     const exportCSV = () => {
-        const headers = 'ID,Tanggal,Keterangan,Kategori,Akun,Jenis,Jumlah';
+        const headers = 'ID,Tanggal,Keterangan,Akun,Jenis,Jumlah';
         const rows = transactions.map(t => 
-            [t.id, t.tanggal, `"${t.keterangan.replace(/"/g, '""')}"`, t.kategori, t.akun, t.jenis, t.jumlah].join(',')
+            [t.id, t.tanggal, `"${t.keterangan.replace(/"/g, '""')}"`, t.akun, t.jenis, t.jumlah].join(',')
         ).join('\n');
         
         const csvContent = `data:text/csv;charset=utf-8,${headers}\n${rows}`;
@@ -331,7 +272,6 @@ document.addEventListener('DOMContentLoaded', () => {
             <tr>
                 <th class="p-3 print-show">Tanggal</th>
                 <th class="p-3 print-show">Keterangan</th>
-                <th class="p-3 print-show">Kategori</th>
                 <th class="p-3 print-show">Akun</th>
                 <th class="p-3 print-show text-right">Jumlah</th>
             </tr>
@@ -343,7 +283,6 @@ document.addEventListener('DOMContentLoaded', () => {
             tr.innerHTML = `
                 <td class="p-3">${new Date(t.tanggal).toLocaleDateString('id-ID')}</td>
                 <td class="p-3">${t.keterangan}</td>
-                <td class="p-3">${t.kategori}</td>
                 <td class="p-3">${t.akun}</td>
                 <td class="p-3 text-right ${isIncome ? 'text-green-600' : 'text-red-600'}">
                     ${formatCurrency(t.jumlah)}
@@ -365,3 +304,4 @@ document.addEventListener('DOMContentLoaded', () => {
     // Jalankan aplikasi
     init();
 });
+        
